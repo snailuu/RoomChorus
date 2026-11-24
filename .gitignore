@@ -1,0 +1,11 @@
+bin/
+dist/
+*.zip
+*.tar.gz
+.DS_Store
+._*
+*.log
+*.out
+coverage.*
+.vscode/
+.idea/

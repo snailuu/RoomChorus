@@ -1,0 +1,190 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>RoomChorus · Mac 广播控制台</title>
+  <link rel="stylesheet" href="/assets/app.css" />
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <div class="brand">
+        <span class="eyebrow">MACOS COREAUDIO PROCESS TAP · WEBRTC HOST</span>
+        <h1>RoomChorus 广播控制台</h1>
+      </div>
+      <div class="row-actions">
+        <div id="broadcastPill" class="pill"><span class="dot"></span><span id="broadcastText">待机</span></div>
+        <button id="toggleBroadcastBtn" class="primary">开始广播</button>
+      </div>
+    </div>
+
+    <div id="silentWarnBanner" class="banner warn hidden">
+      <div>
+        <strong>检测到系统音频连续静音</strong><br />
+        <span class="muted">若电脑正在播放音乐但无电平波动，请前往「系统设置 → 隐私与安全性 → 录屏与系统录音 → 仅系统音频录制」开启 RoomChorus 权限，或先切到「1Hz 同步校准测试音」测试链路。</span>
+      </div>
+      <button id="switchTestToneBtn" class="sm">切为测试音</button>
+    </div>
+
+    <div id="errorBanner" class="banner error hidden"></div>
+
+    <div class="grid">
+      <div class="card col-7">
+        <h2>
+          <span>01 / 音源与本机同步监听</span>
+          <span id="rmsText" class="muted">电平 0%</span>
+        </h2>
+
+        <div class="segmented" id="sourceSegment">
+          <button data-source="system" class="active">Mac 全系统声音（免驱）</button>
+          <button data-source="input">音频输入 / BlackHole</button>
+          <button data-source="test-tone">1Hz 同步校准测试音</button>
+        </div>
+
+        <div id="inputDeviceField" class="field hidden">
+          <div class="field-head"><span>选择捕获输入设备</span></div>
+          <select id="inputDeviceSelect"></select>
+        </div>
+
+        <div class="meter-wrap" title="实时采集电平">
+          <div id="meterFill" class="meter-fill"></div>
+        </div>
+
+        <div class="field" style="margin-top: 18px;">
+          <div class="field-head">
+            <span>共享广播音量（作用于全部远程听众）</span>
+            <strong id="hostVolumeVal">100%</strong>
+          </div>
+          <input id="hostVolumeSlider" type="range" min="0" max="100" step="1" value="100" />
+        </div>
+
+        <div class="field">
+          <div class="field-head"><span>Opus 编码码率（48kHz 立体声）</span></div>
+          <select id="bitrateSelect">
+            <option value="128000">128 kbps（极省带宽）</option>
+            <option value="192000" selected>192 kbps（均衡推荐）</option>
+            <option value="256000">256 kbps（高保真音乐）</option>
+          </select>
+        </div>
+
+        <div class="toggle-row">
+          <div>
+            <div><strong>自动静音原系统声音防回声</strong></div>
+            <div class="muted">通过 CoreAudio Tap 拦截未延迟直出，避免与本机同步监听叠加产生回声</div>
+          </div>
+          <input id="muteOriginalCheck" type="checkbox" checked />
+        </div>
+
+        <div class="toggle-row">
+          <div>
+            <div><strong>Mac 本机扬声器同步发声</strong></div>
+            <div class="muted">按统一时间线延迟后从本机扬声器播放，与手机零回声同频</div>
+          </div>
+          <input id="monitorEnableCheck" type="checkbox" checked />
+        </div>
+
+        <div id="monitorPanel">
+          <div class="field">
+            <div class="field-head"><span>本机输出扬声器 / 耳机</span></div>
+            <select id="monitorDeviceSelect"></select>
+          </div>
+          <div class="field">
+            <div class="field-head">
+              <span>本机监听音量</span>
+              <strong id="monitorGainVal">85%</strong>
+            </div>
+            <input id="monitorGainSlider" type="range" min="0" max="100" step="1" value="85" />
+          </div>
+          <div class="field">
+            <div class="field-head">
+              <span>本机延迟微调（补偿外接蓝牙/功放）</span>
+              <strong id="hostOffsetVal">0 ms</strong>
+            </div>
+            <input id="hostOffsetSlider" type="range" min="-300" max="300" step="5" value="0" />
+          </div>
+        </div>
+      </div>
+
+      <div class="card col-5">
+        <h2>
+          <span>02 / 扫码加入（同局域网）</span>
+          <span id="listenerBadge" class="muted">0 台在线</span>
+        </h2>
+
+        <div class="qr-box">
+          <div class="segmented" id="qrModeSegment" style="width:100%; margin-bottom: 4px;">
+            <button data-mode="ipv4" class="active">IPv4 兼容</button>
+            <button data-mode="mdns">mDNS (.local)</button>
+          </div>
+
+          <div class="qr-frame">
+            <img id="qrImage" src="/api/qr.png?mode=ipv4" alt="加入二维码" />
+          </div>
+
+          <div id="joinUrlBox" class="url-box">—</div>
+
+          <div class="row-actions" style="width:100%; justify-content: space-between;">
+            <button id="copyUrlBtn" class="sm">复制链接</button>
+            <button id="rotateTokenBtn" class="sm">更换口令 (<span id="tokenBadge">—</span>)</button>
+          </div>
+        </div>
+
+        <div class="field">
+          <div class="field-head"><span>局域网绑定网卡</span></div>
+          <select id="ifaceSelect"></select>
+        </div>
+
+        <div class="stats-grid">
+          <div class="stat-item">
+            <div class="k">共同目标档位</div>
+            <div class="v" id="displayTargetVal">300 ms</div>
+          </div>
+          <div class="stat-item">
+            <div class="k">平滑执行目标</div>
+            <div class="v" id="activeTargetVal">300 ms</div>
+          </div>
+          <div class="stat-item">
+            <div class="k">本机输出延迟</div>
+            <div class="v" id="hostLatVal">—</div>
+          </div>
+          <div class="stat-item">
+            <div class="k">本机延迟补偿</div>
+            <div class="v" id="hostCompVal">—</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="card col-12">
+        <h2>
+          <span>03 / 在线设备与同步遥测</span>
+          <a id="localListenerLink" href="/" target="_blank" class="muted" style="color: var(--accent); text-decoration: none; font-size: 13px;">本机打开测试收听页 ↗</a>
+        </h2>
+
+        <div class="table-scroll">
+          <table>
+            <thead>
+              <tr>
+                <th>设备</th>
+                <th>RTT</th>
+                <th>抖动缓冲 + 输出</th>
+                <th>有效路径</th>
+                <th>发送补偿</th>
+                <th>丢包</th>
+                <th>声道</th>
+                <th>延迟微调 (ms)</th>
+                <th>操作</th>
+              </tr>
+            </thead>
+            <tbody id="listenersBody">
+              <tr><td colspan="9" class="muted">暂无收听设备连接，请用手机或平板扫描上方二维码。</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="/assets/host.js"></script>
+</body>
+</html>
