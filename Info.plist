@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>CFBundleDevelopmentRegion</key>
+	<string>zh_CN</string>
+	<key>CFBundleDisplayName</key>
+	<string>RoomChorus</string>
+	<key>CFBundleExecutable</key>
+	<string>roomchorus</string>
+	<key>CFBundleIdentifier</key>
+	<string>com.roomchorus.host</string>
+	<key>CFBundleInfoDictionaryVersion</key>
+	<string>6.0</string>
+	<key>CFBundleName</key>
+	<string>RoomChorus</string>
+	<key>CFBundlePackageType</key>
+	<string>APPL</string>
+	<key>CFBundleShortVersionString</key>
+	<string>0.1.0</string>
+	<key>CFBundleVersion</key>
+	<string>1</string>
+	<key>LSMinimumSystemVersion</key>
+	<string>14.2</string>
+	<key>NSAudioCaptureUsageDescription</key>
+	<string>用于免驱捕获 macOS 系统音频并在局域网内同步广播到多台设备。</string>
+	<key>NSMicrophoneUsageDescription</key>
+	<string>用于可选的指定音频输入设备（如 BlackHole 或麦克风）捕获。</string>
+	<key>NSLocalNetworkUsageDescription</key>
+	<string>用于在局域网内发现主机并向同网段设备同步广播音频。</string>
+</dict>
+</plist>

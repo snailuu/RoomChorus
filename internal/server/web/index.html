@@ -1,0 +1,141 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="theme-color" content="#0c110e" />
+  <title>RoomChorus · 局域网同步收听</title>
+  <link rel="stylesheet" href="/assets/app.css" />
+</head>
+<body>
+  <div class="container narrow">
+    <div class="header">
+      <div class="brand">
+        <span class="eyebrow">LAN WEBRTC · 48KHZ STEREO OPUS</span>
+        <h1>RoomChorus</h1>
+      </div>
+      <div id="statusPill" class="pill"><span class="dot"></span><span id="statusText">连接中…</span></div>
+    </div>
+
+    <div id="errorBanner" class="banner error hidden"></div>
+
+    <div id="tokenCard" class="card hidden" style="margin-bottom: 16px;">
+      <h2>输入房间口令</h2>
+      <p class="muted" style="margin-top:0;">当前广播已启用口令校验，请扫描主机二维码或输入主机控制台上的 8 位口令。</p>
+      <div class="row-actions">
+        <input id="tokenInput" type="text" placeholder="例如 a1b2c3d4" style="flex:1;" />
+        <button id="tokenSaveBtn" class="primary">验证加入</button>
+      </div>
+    </div>
+
+    <div class="card" style="margin-bottom: 16px;">
+      <button id="joinBtn" class="primary big-cta">加入同步收听</button>
+      <audio id="remoteAudio" autoplay playsinline></audio>
+
+      <div class="stats-grid">
+        <div class="stat-item">
+          <div class="k">共同时间线</div>
+          <div class="v" id="targetVal">—</div>
+        </div>
+        <div class="stat-item">
+          <div class="k">网络 RTT</div>
+          <div class="v" id="rttVal">—</div>
+        </div>
+        <div class="stat-item">
+          <div class="k">主机发送补偿</div>
+          <div class="v" id="sendDelayVal">—</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2>本机播放与同步微调</h2>
+
+      <div class="field">
+        <div class="field-head">
+          <span>音量 <span id="volModeTag" class="muted"></span></span>
+          <strong id="volumeVal">85%</strong>
+        </div>
+        <input id="volumeSlider" type="range" min="0" max="100" step="1" value="85" />
+      </div>
+
+      <div class="field">
+        <div class="field-head">
+          <span>声道分配</span>
+        </div>
+        <select id="channelSelect">
+          <option value="stereo">立体声（左右完整）</option>
+          <option value="left">仅左声道（双耳/全喇叭输出）</option>
+          <option value="right">仅右声道（双耳/全喇叭输出）</option>
+          <option value="mono">混合单声道（L+R 合并）</option>
+        </select>
+      </div>
+
+      <div class="field">
+        <div class="field-head">
+          <span>硬件 / 蓝牙延迟微调</span>
+          <strong id="offsetVal">0 ms</strong>
+        </div>
+        <input id="offsetSlider" type="range" min="-300" max="300" step="5" value="0" />
+        <div class="row-actions" style="justify-content: space-between; margin-top: 6px;">
+          <span class="muted">蓝牙/音响偏慢往左拉（提前发送）</span>
+          <button id="offsetResetBtn" class="sm">归零</button>
+        </div>
+      </div>
+
+      <details>
+        <summary>设备与同步诊断详情</summary>
+        <div class="field">
+          <div class="field-head"><span>设备名称（显示在主机面板）</span></div>
+          <div class="row-actions">
+            <input id="deviceNameInput" type="text" maxlength="28" style="flex:1;" />
+            <button id="saveNameBtn" class="sm">保存</button>
+          </div>
+        </div>
+        <div class="stats-grid">
+          <div class="stat-item">
+            <div class="k">抖动缓冲</div>
+            <div class="v" id="jbVal">—</div>
+          </div>
+          <div class="stat-item">
+            <div class="k">浏览器输出延迟</div>
+            <div class="v" id="outLatVal">—</div>
+          </div>
+          <div class="stat-item">
+            <div class="k">估算基础路径</div>
+            <div class="v" id="basePathVal">—</div>
+          </div>
+          <div class="stat-item">
+            <div class="k">累计丢包</div>
+            <div class="v" id="lossVal">0</div>
+          </div>
+        </div>
+        <p id="connDetail" class="muted" style="margin-bottom:0;">WebRTC 未连接</p>
+      </details>
+    </div>
+  </div>
+
+  <script>
+    (function () {
+      function showBootErr(msg) {
+        var b = document.getElementById('errorBanner');
+        var st = document.getElementById('statusText');
+        if (st) st.textContent = '脚本出错';
+        if (b) {
+          b.textContent = '页面脚本异常: ' + msg;
+          b.className = b.className.replace(/\bhidden\b/g, '');
+        }
+      }
+      window.onerror = function (message, source, lineno) {
+        showBootErr(message + (lineno ? ' (line ' + lineno + ')' : ''));
+      };
+      window.onunhandledrejection = function (ev) {
+        var r = ev && ev.reason;
+        showBootErr((r && r.message) ? r.message : String(r));
+      };
+    })();
+  </script>
+  <script src="/assets/listener.js"></script>
+</body>
+</html>
